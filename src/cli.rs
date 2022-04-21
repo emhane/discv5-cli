@@ -21,6 +21,7 @@ pub fn start_cli<'a>() -> clap::ArgMatches<'a> {
         .subcommand(server_cli())
         .subcommand(packet_cli())
         .subcommand(request_enr())
+        .subcommand(hashes())
         .get_matches()
 }
 
@@ -161,5 +162,16 @@ fn request_enr<'a, 'b>() -> App<'a, 'b> {
                 .value_name("MULTIADDR")
                 .takes_value(true)
                 .help("The multiaddr of the node to request their ENR from"),
+        )
+}
+
+fn hashes<'a, 'b>() -> App<'a, 'b> {
+    App::new("hashes")
+        .about("Returns the topic string hashed by each supported hashing algorithm")
+        .arg(
+            Arg::with_name("topic")
+                .value_name("TOPICSTR")
+                .takes_value(true)
+                .help("A topic as string"),
         )
 }

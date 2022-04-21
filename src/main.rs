@@ -57,6 +57,7 @@ mod cli;
 mod packet;
 mod request_enr;
 mod server;
+mod topic;
 use log::error;
 
 #[tokio::main]
@@ -95,6 +96,8 @@ async fn main() {
             error!("A packet subcommand must be supplied. See --help for options");
             return;
         }
+    } else if let Some(topic_matches) = cli_matches.subcommand_matches("hashes") {
+        topic::run(topic_matches).await;
     } else {
         // No subcommand supplied
         error!("A subcommand must be supplied. See --help for options");
