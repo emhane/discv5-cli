@@ -22,6 +22,8 @@ pub fn start_cli<'a>() -> clap::ArgMatches<'a> {
         .subcommand(packet_cli())
         .subcommand(request_enr())
         .subcommand(hashes())
+        .subcommand(reg_topic())
+        .subcommand(topic_query())
         .get_matches()
 }
 
@@ -172,6 +174,46 @@ fn hashes<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name("topic")
                 .value_name("TOPICSTR")
                 .takes_value(true)
-                .help("A topic as string"),
+                .help("A topic string"),
+        )
+}
+
+fn reg_topic<'a, 'b>() -> App<'a, 'b> {
+    App::new("reg-topic")
+        .about("Publishes an ad for the topic hash at the closest nodes to the topic hash")
+        .arg(
+            Arg::with_name("topic")
+                .value_name("TOPIC")
+                .takes_value(true)
+                .help("A topic string"),
+        )
+        .arg(
+            Arg::with_name("enr")
+                .long("enr")
+                .short("e")
+                .value_name("BASE64-ENR")
+                .allow_hyphen_values(true)
+                .help("A base64 ENR that this node will initially connect to.")
+                .takes_value(true),
+        )
+}
+
+fn topic_query<'a, 'b>() -> App<'a, 'b> {
+    App::new("topic-query")
+        .about("Returns ENRs which advertise the topic hash")
+        .arg(
+            Arg::with_name("topic-hash")
+                .value_name("TOPICHASH")
+                .takes_value(true)
+                .help("A topic hash encoded in base64"),
+        )
+        .arg(
+            Arg::with_name("enr")
+                .long("enr")
+                .short("e")
+                .value_name("BASE64-ENR")
+                .allow_hyphen_values(true)
+                .help("A base64 ENR that this node will initially connect to.")
+                .takes_value(true),
         )
 }

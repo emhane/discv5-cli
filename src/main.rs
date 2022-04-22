@@ -80,6 +80,7 @@ async fn main() {
     // initialize the logger
     simple_logger::SimpleLogger::new()
         .with_level(log_level)
+        .with_utc_timestamps()
         .init()
         .expect("Could not build the logger");
 
@@ -97,7 +98,11 @@ async fn main() {
             return;
         }
     } else if let Some(topic_matches) = cli_matches.subcommand_matches("hashes") {
-        topic::run(topic_matches).await;
+        topic::hashes(topic_matches).await;
+    } else if let Some(topic_matches) = cli_matches.subcommand_matches("reg-topic") {
+        topic::reg_topic(topic_matches).await;
+    } else if let Some(topic_hash_matches) = cli_matches.subcommand_matches("topic-query") {
+        topic::topic_query(topic_hash_matches).await;
     } else {
         // No subcommand supplied
         error!("A subcommand must be supplied. See --help for options");
