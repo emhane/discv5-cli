@@ -110,7 +110,6 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
             }
         }
         info!("Connected Peers: {}", discv5.connected_peers());
-
     }
 
     // Request the closest nodes to the topic hash
@@ -179,7 +178,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     }
 
     for _ in 0..3 {
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
         info!("Searching for peers...");
         // pick a random node target
         let target_random_node_id = enr::NodeId::random();
@@ -192,8 +191,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
                 }
             }
         }
-        info!("Connected Peers: {}", discv5.connected_peers());
-
+         info!("Connected Peers: {}", discv5.connected_peers());
     }
 
     // Request the closest nodes to the topic hash
@@ -217,8 +215,8 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
 
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
-    for _ in 0..3 {
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    loop {
+        tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
         info!("Requesting active topics");
 
         match discv5.active_topics().await {
