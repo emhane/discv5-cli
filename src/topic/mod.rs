@@ -115,21 +115,7 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     // Request the closest nodes to the topic hash
     info!("Requesting closest nodes to: {}", topic_hash);
 
-    let enrs = match discv5.find_closest_nodes_to_topic(topic_hash).await {
-        Ok(enrs) => enrs,
-        Err(e) => {
-            error!("Failed to obtain ENRs of closest nodes. Error: {}", e);
-            Vec::new()
-        },
-    };
-
-    let topic_query_futs = enrs.into_iter().map(|enr| discv5.topic_query_req(enr, topic_hash)).collect::<Vec<_>>();
-    let fut = join_all(topic_query_futs);
-    let res = fut.await;
-    res.into_iter().for_each(|r| match r {
-        Ok(enrs) => info!("Ads: {:?}", enrs),
-        Err(e) => error!("Failed to obtain ads. Error: {}", e),
-    })
+    discv5.topic_query_req(topic_hash).await.map_err(|e| error!("Failed to register. Error: {}", e)).map(|enrs| info!("Ads: {:?}", enrs));
 }
 
 pub async fn reg_topic(matches: &ArgMatches<'_>) {
@@ -197,21 +183,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     // Request the closest nodes to the topic hash
     info!("Requesting closest nodes to: {}", topic.hash());
 
-    let enrs = match discv5.find_closest_nodes_to_topic(topic.hash()).await {
-        Ok(enrs) => enrs,
-        Err(e) => {
-            error!("Failed to obtain ENRs of closest nodes. Error: {}", e);
-            Vec::new()
-        },
-    };
-
-    let reg_topic_futs = enrs.into_iter().map(|enr| discv5.reg_topic_req(enr, topic.clone())).collect::<Vec<_>>();
-    let fut = join_all(reg_topic_futs);
-    let res = fut.await;
-    res.into_iter().for_each(|r| match r {
-        Ok(()) => info!("registered"),
-        Err(e) => error!("Failed to register. Error: {}", e),
-    });
+    discv5.reg_topic_req(topic.clone()).await.map_err(|e| error!("Failed to register. Error: {}", e)).map(|_| info!("registered!"));
 
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
@@ -224,6 +196,4 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
             Err(e) => error!("Failed to obtain ads published on other nodes. Error: {}", e),
         };
     }
-
-
 }
