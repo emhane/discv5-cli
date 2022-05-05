@@ -95,7 +95,6 @@ async fn main() {
         } else {
             // Currently no encode sub command
             error!("A packet subcommand must be supplied. See --help for options");
-            return;
         }
     } else if let Some(topic_matches) = cli_matches.subcommand_matches("hashes") {
         topic::hashes(topic_matches).await;
@@ -106,6 +105,5 @@ async fn main() {
     } else {
         // No subcommand supplied
         error!("A subcommand must be supplied. See --help for options");
-        return;
     }
 }

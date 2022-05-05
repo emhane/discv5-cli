@@ -1,8 +1,12 @@
 use clap::ArgMatches;
-use discv5::{advertisement::topic::{TopicHash, Sha256Topic}, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, };
+use discv5::{
+    advertisement::topic::{Sha256Topic, TopicHash},
+    enr,
+    enr::CombinedKey,
+    Discv5, Discv5ConfigBuilder,
+};
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
-use futures::future::join_all;
 
 pub async fn hashes(matches: &ArgMatches<'_>) {
     // Obtain the topic string
@@ -14,7 +18,7 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
     let listen_address = "0.0.0.0"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9001;
+    let listen_port = 9018;
     let enr_key = CombinedKey::generate_secp256k1();
 
     // build a local ENR
@@ -54,7 +58,7 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
         .value_of("topic-hash")
         .expect("A <topic-hash> must be supplied");
     let hash_bytes = base64::decode(topic_hash).unwrap();
-    let mut buf = [0u8;32];
+    let mut buf = [0u8; 32];
     buf.copy_from_slice(&hash_bytes);
     let topic_hash = TopicHash::from_raw(buf);
 
@@ -115,7 +119,16 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     // Request the closest nodes to the topic hash
     info!("Requesting closest nodes to: {}", topic_hash);
 
-    discv5.topic_query_req(topic_hash).await.map_err(|e| error!("Failed to register. Error: {}", e)).map(|enrs| info!("Ads: {:?}", enrs));
+    discv5
+        .topic_query_req(topic_hash)
+        .await
+        .map_err(|e| error!("Failed to register. Error: {}", e))
+        .map(|enrs| {
+            info!("Ads found for {}:", topic_hash);
+            enrs.into_iter()
+                .for_each(|enr| info!("NodeId: {}", enr.node_id()));
+        })
+        .ok();
 }
 
 pub async fn reg_topic(matches: &ArgMatches<'_>) {
@@ -130,7 +143,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     let listen_address = "127.0.0.1"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9001;
+    let listen_port = 9017;
     let enr_key = CombinedKey::generate_secp256k1();
     // Build a local ENR
     let enr = enr::EnrBuilder::new("v4")
@@ -164,7 +177,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     }
 
     for _ in 0..3 {
-         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
         info!("Searching for peers...");
         // pick a random node target
         let target_random_node_id = enr::NodeId::random();
@@ -177,13 +190,18 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
                 }
             }
         }
-         info!("Connected Peers: {}", discv5.connected_peers());
+        info!("Connected Peers: {}", discv5.connected_peers());
     }
 
     // Request the closest nodes to the topic hash
     info!("Requesting closest nodes to: {}", topic.hash());
 
-    discv5.reg_topic_req(topic.clone()).await.map_err(|e| error!("Failed to register. Error: {}", e)).map(|_| info!("registered!"));
+    discv5
+        .reg_topic_req(topic.clone())
+        .await
+        .map_err(|e| error!("Failed to register. Error: {}", e))
+        .map(|_| info!("registered!"))
+        .ok();
 
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
@@ -192,8 +210,11 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
         info!("Requesting active topics");
 
         match discv5.active_topics().await {
-            Ok(ads) => info!("{:?}", ads),
-            Err(e) => error!("Failed to obtain ads published on other nodes. Error: {}", e),
+            Ok(ads) => info!("Ads published by us active on other nodes: {}", ads),
+            Err(e) => error!(
+                "Failed to obtain ads published on other nodes. Error: {}",
+                e
+            ),
         };
     }
 }

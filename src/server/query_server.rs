@@ -42,7 +42,7 @@ fn print_stats(discv5: &mut Discv5) {
         if let Some(bucket_no) = bucket_no {
             bucket_values
                 .entry(bucket_no)
-                .or_insert_with(|| Vec::new())
+                .or_insert(Vec::new())
                 .push((enr, status));
         }
     }
