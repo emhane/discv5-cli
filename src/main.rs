@@ -102,6 +102,8 @@ async fn main() {
         topic::reg_topic(topic_matches).await;
     } else if let Some(topic_hash_matches) = cli_matches.subcommand_matches("topic-query") {
         topic::topic_query(topic_hash_matches).await;
+    } else if let Some(topic_matches) = cli_matches.subcommand_matches("remove-topic") {
+        topic::remove_topic(topic_matches).await;
     } else {
         // No subcommand supplied
         error!("A subcommand must be supplied. See --help for options");

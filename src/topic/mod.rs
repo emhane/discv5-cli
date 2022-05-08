@@ -1,6 +1,6 @@
 use clap::ArgMatches;
 use discv5::{
-    advertisement::topic::{Sha256Topic, TopicHash},
+    advertisement::topic::TopicHash,
     enr,
     enr::CombinedKey,
     Discv5, Discv5ConfigBuilder,
@@ -14,11 +14,33 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
         .value_of("topic")
         .expect("A <topic> must be supplied");
 
+    // Request the hashes
+    info!("Fetching hashes of: {}", topic_string);
+
+    let hashes = Discv5::hashes(topic_string.to_owned());
+    print_hashes(hashes);
+}
+
+// Print each hash and the hashing algortihm it derives from
+fn print_hashes(hashes: Vec<(TopicHash, String)>) {
+    info!("Topic hashes:");
+    hashes
+        .into_iter()
+        .for_each(|(hash, hash_func)| info!("{} {}", hash, hash_func));
+}
+
+/// Remove topic from set of topics to republish, effective from next republish interval on
+pub async fn remove_topic(matches: &ArgMatches<'_>) {
+    // Obtain the topic string
+    let topic = matches
+        .value_of("topic")
+        .expect("A <topic> must be supplied").to_owned();
+
     // set up a server to receive the response
     let listen_address = "0.0.0.0"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9018;
+    let listen_port = 9011;
     let enr_key = CombinedKey::generate_secp256k1();
 
     // build a local ENR
@@ -38,18 +60,13 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
     discv5.start(listen_socket).await.unwrap();
 
     // Request the hashes
-    info!("Requesting hashes of: {}", topic_string);
+    info!("Removing topic: {}", topic);
 
-    let hashes = Discv5::hashes(topic_string.to_owned());
-    print_hashes(hashes);
-}
-
-// Print each hash and the hashing algortihm it derives from
-fn print_hashes(hashes: Vec<(TopicHash, String)>) {
-    info!("Topic hashes:");
-    hashes
-        .into_iter()
-        .for_each(|(hash, hash_func)| info!("{} {}", hash, hash_func));
+    match discv5.remove_topic(topic).await {
+        Ok(Some(topic_string)) => info!("Removed topic: {}", topic_string),
+        Err(e) => error!("Failed to remove topic. Error: {}", e),
+        _ => info!("The topic does not exist"),
+    }
 }
 
 pub async fn topic_query(matches: &ArgMatches<'_>) {

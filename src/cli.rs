@@ -24,6 +24,7 @@ pub fn start_cli<'a>() -> clap::ArgMatches<'a> {
         .subcommand(hashes())
         .subcommand(reg_topic())
         .subcommand(topic_query())
+        .subcommand(remove_topic())
         .get_matches()
 }
 
@@ -175,6 +176,14 @@ fn hashes<'a, 'b>() -> App<'a, 'b> {
                 .value_name("TOPICSTR")
                 .takes_value(true)
                 .help("A topic string"),
+        )
+}
+
+fn remove_topic<'a, 'b>() -> App<'a, 'b> {
+    App::new("remove_topic")
+        .about("Removes an ad from the set of ads to keep publishing")
+        .arg(
+            Arg::with_name("topic").value_name("TOPIC").takes_value(true).help("A topic string"),
         )
 }
 
