@@ -40,7 +40,7 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
     // Request the hashes
     info!("Requesting hashes of: {}", topic_string);
 
-    let hashes = discv5.hashes(topic_string.to_owned());
+    let hashes = Discv5::hashes(topic_string.to_owned());
     print_hashes(hashes);
 }
 
@@ -133,11 +133,10 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
 
 pub async fn reg_topic(matches: &ArgMatches<'_>) {
     // Obtain the topic string
-    let topic_string = matches
+    let topic = matches
         .value_of("topic")
-        .expect("A <topic> must be supplied");
+        .expect("A <topic> must be supplied").to_owned();
 
-    let topic = Sha256Topic::new(topic_string);
 
     // Set up a server to receive the response
     let listen_address = "127.0.0.1"
@@ -194,10 +193,10 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     }
 
     // Request the closest nodes to the topic hash
-    info!("Requesting closest nodes to: {}", topic.hash());
+    info!("Requesting closest nodes to: {}", topic);
 
     discv5
-        .reg_topic_req(topic.clone())
+        .reg_topic_req(topic)
         .await
         .map_err(|e| error!("Failed to register. Error: {}", e))
         .map(|_| info!("registered!"))
