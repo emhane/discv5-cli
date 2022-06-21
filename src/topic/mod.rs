@@ -46,7 +46,7 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     // build a local ENR
     let enr = enr::EnrBuilder::new("v4")
         .ip(listen_address)
-        .udp(listen_port)
+        .udp4(listen_port)
         .build(&enr_key)
         .unwrap();
 
@@ -63,9 +63,8 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     info!("Removing topic: {}", topic);
 
     match discv5.remove_topic(topic).await {
-        Ok(Some(topic_string)) => info!("Removed topic: {}", topic_string),
+        Ok(topic_string) => info!("Removed topic: {}", topic_string),
         Err(e) => error!("Failed to remove topic. Error: {}", e),
-        _ => info!("The topic does not exist"),
     }
 }
 
@@ -88,7 +87,7 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     // Build a local ENR
     let enr = enr::EnrBuilder::new("v4")
         .ip(listen_address)
-        .udp(listen_port)
+        .udp4(listen_port)
         .build(&enr_key)
         .unwrap();
     let listen_socket = SocketAddr::new(listen_address, listen_port);
@@ -107,9 +106,9 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     if let Some(connect_enr) = connect_enr {
         info!(
             "Connecting to ENR. ip: {:?}, udp_port: {:?},  tcp_port: {:?}",
-            connect_enr.ip(),
-            connect_enr.udp(),
-            connect_enr.tcp()
+            connect_enr.ip4(),
+            connect_enr.udp4(),
+            connect_enr.tcp4()
         );
         if let Err(e) = discv5.add_enr(connect_enr) {
             warn!("ENR not added: {:?}", e);
@@ -132,9 +131,6 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
         }
         info!("Connected Peers: {}", discv5.connected_peers());
     }
-
-    // Request the closest nodes to the topic hash
-    info!("Requesting closest nodes to: {}", topic_hash);
 
     discv5
         .topic_query_req(topic_hash)
@@ -164,7 +160,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     // Build a local ENR
     let enr = enr::EnrBuilder::new("v4")
         .ip(listen_address)
-        .udp(listen_port)
+        .udp4(listen_port)
         .build(&enr_key)
         .unwrap();
     let listen_socket = SocketAddr::new(listen_address, listen_port);
@@ -183,9 +179,9 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     if let Some(connect_enr) = connect_enr {
         info!(
             "Connecting to ENR. ip: {:?}, udp_port: {:?},  tcp_port: {:?}",
-            connect_enr.ip(),
-            connect_enr.udp(),
-            connect_enr.tcp()
+            connect_enr.ip4(),
+            connect_enr.udp4(),
+            connect_enr.tcp4()
         );
         if let Err(e) = discv5.add_enr(connect_enr) {
             warn!("ENR not added: {:?}", e);
@@ -208,15 +204,11 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
         }
         info!("Connected Peers: {}", discv5.connected_peers());
     }
-
-    // Request the closest nodes to the topic hash
-    info!("Requesting closest nodes to: {}", topic);
-
+    info!("Sending REGTOPIC requests");
     discv5
         .reg_topic_req(topic)
         .await
         .map_err(|e| error!("Failed to register. Error: {}", e))
-        .map(|_| info!("registered!"))
         .ok();
 
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
