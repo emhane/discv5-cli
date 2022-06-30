@@ -96,7 +96,11 @@ pub async fn run(server_matches: &ArgMatches<'_>) {
     info!("Node Id: {}", enr.node_id());
     if enr.udp4_socket().is_some() {
         info!("Base64 ENR: {}", enr.to_base64());
-        info!("ip: {}, udp port:{}", enr.ip4().unwrap(), enr.udp4().unwrap());
+        info!(
+            "ip: {}, udp port:{}",
+            enr.ip4().unwrap(),
+            enr.udp4().unwrap()
+        );
     } else {
         warn!("ENR is not printed as no IP:PORT was specified");
     }

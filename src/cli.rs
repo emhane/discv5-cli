@@ -183,7 +183,10 @@ fn remove_topic<'a, 'b>() -> App<'a, 'b> {
     App::new("remove_topic")
         .about("Removes an ad from the set of ads to keep publishing")
         .arg(
-            Arg::with_name("topic").value_name("TOPIC").takes_value(true).help("A topic string"),
+            Arg::with_name("topic")
+                .value_name("TOPIC")
+                .takes_value(true)
+                .help("A topic string"),
         )
 }
 

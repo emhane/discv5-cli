@@ -1,10 +1,5 @@
 use clap::ArgMatches;
-use discv5::{
-    advertisement::topic::TopicHash,
-    enr,
-    enr::CombinedKey,
-    Discv5, Discv5ConfigBuilder,
-};
+use discv5::{advertisement::topic::TopicHash, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder};
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
 
@@ -34,7 +29,8 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     // Obtain the topic string
     let topic = matches
         .value_of("topic")
-        .expect("A <topic> must be supplied").to_owned();
+        .expect("A <topic> must be supplied")
+        .to_owned();
 
     // set up a server to receive the response
     let listen_address = "0.0.0.0"
@@ -115,23 +111,22 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
         }
     }
 
-    for _ in 0..3 {
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-        info!("Searching for peers...");
-        // pick a random node target
-        let target_random_node_id = enr::NodeId::random();
-        match discv5.find_node(target_random_node_id).await {
-            Err(e) => println!("Find Node result failed: {:?}", e),
-            Ok(found_enrs) => {
-                info!("Query Completed. Nodes found: {}", found_enrs.len());
-                for enr in found_enrs {
-                    info!("Node: {}", enr.node_id());
-                }
+    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    info!("Searching for peers...");
+    // pick a random node target
+    let target_random_node_id = enr::NodeId::random();
+    match discv5.find_node(target_random_node_id).await {
+        Err(e) => println!("Find Node result failed: {:?}", e),
+        Ok(found_enrs) => {
+            info!("Query Completed. Nodes found: {}", found_enrs.len());
+            for enr in found_enrs {
+                info!("Node: {}", enr.node_id());
             }
         }
-        info!("Connected Peers: {}", discv5.connected_peers());
     }
+    info!("Connected Peers: {}", discv5.connected_peers());
 
+    info!("Sending TOPICQUERYs");
     discv5
         .topic_query_req(topic_hash)
         .await
@@ -148,8 +143,8 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     // Obtain the topic string
     let topic = matches
         .value_of("topic")
-        .expect("A <topic> must be supplied").to_owned();
-
+        .expect("A <topic> must be supplied")
+        .to_owned();
 
     // Set up a server to receive the response
     let listen_address = "127.0.0.1"
@@ -188,22 +183,21 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
         }
     }
 
-    for _ in 0..3 {
-        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
-        info!("Searching for peers...");
-        // pick a random node target
-        let target_random_node_id = enr::NodeId::random();
-        match discv5.find_node(target_random_node_id).await {
-            Err(e) => println!("Find Node result failed: {:?}", e),
-            Ok(found_enrs) => {
-                info!("Query Completed. Nodes found: {}", found_enrs.len());
-                for enr in found_enrs {
-                    info!("Node: {}", enr.node_id());
-                }
+    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    info!("Searching for peers...");
+    // pick a random node target
+    let target_random_node_id = enr::NodeId::random();
+    match discv5.find_node(target_random_node_id).await {
+        Err(e) => println!("Find Node result failed: {:?}", e),
+        Ok(found_enrs) => {
+            info!("Query Completed. Nodes found: {}", found_enrs.len());
+            for enr in found_enrs {
+                info!("Node: {}", enr.node_id());
             }
         }
-        info!("Connected Peers: {}", discv5.connected_peers());
     }
+    info!("Connected Peers: {}", discv5.connected_peers());
+
     info!("Sending REGTOPIC requests");
     discv5
         .reg_topic_req(topic)
