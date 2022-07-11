@@ -32,6 +32,11 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
         .expect("A <topic> must be supplied")
         .to_owned();
 
+    let hash_bytes = base64::decode(topic.clone()).unwrap();
+    let mut buf = [0u8; 32];
+    buf.copy_from_slice(&hash_bytes);
+    let topic_hash = TopicHash::from_raw(buf);
+
     // set up a server to receive the response
     let listen_address = "0.0.0.0"
         .parse::<IpAddr>()
@@ -58,7 +63,7 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     // Request the hashes
     info!("Removing topic: {}", topic);
 
-    match discv5.remove_topic(topic).await {
+    match discv5.remove_topic(topic_hash).await {
         Ok(topic_string) => info!("Removed topic: {}", topic_string),
         Err(e) => error!("Failed to remove topic. Error: {}", e),
     }
