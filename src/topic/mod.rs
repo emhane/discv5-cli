@@ -41,7 +41,13 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     let listen_address = "0.0.0.0"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9011;
+
+    let listen_port = matches
+        .value_of("listen-port")
+        .expect("required parameter")
+        .parse::<u16>()
+        .expect("Invalid listening port");
+
     let enr_key = CombinedKey::generate_secp256k1();
 
     // build a local ENR
@@ -83,7 +89,13 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     let listen_address = "127.0.0.1"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9006;
+
+    let listen_port = matches
+        .value_of("listen-port")
+        .expect("required parameter")
+        .parse::<u16>()
+        .expect("Invalid listening port");
+
     let enr_key = CombinedKey::generate_secp256k1();
     // Build a local ENR
     let enr = enr::EnrBuilder::new("v4")
@@ -132,16 +144,19 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     info!("Connected Peers: {}", discv5.connected_peers());
 
     info!("Sending TOPICQUERYs");
-    discv5
-        .topic_query_req(topic_hash)
-        .await
-        .map_err(|e| error!("Failed to register. Error: {}", e))
-        .map(|enrs| {
-            info!("Ads found for {}:", topic_hash);
-            enrs.into_iter()
-                .for_each(|enr| info!("NodeId: {}", enr.node_id()));
-        })
-        .ok();
+    loop {
+        discv5
+            .topic_query_req(topic_hash)
+            .await
+            .map_err(|e| error!("Failed to register. Error: {}", e))
+            .map(|enrs| {
+                info!("Ads found for {}:", topic_hash);
+                enrs.into_iter()
+                    .for_each(|enr| info!("NodeId: {}", enr.node_id()));
+            })
+            .ok();
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    }
 }
 
 pub async fn reg_topic(matches: &ArgMatches<'_>) {
@@ -155,7 +170,13 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     let listen_address = "127.0.0.1"
         .parse::<IpAddr>()
         .expect("This is a valid address");
-    let listen_port = 9017;
+
+    let listen_port = matches
+        .value_of("listen-port")
+        .expect("required parameter")
+        .parse::<u16>()
+        .expect("Invalid listening port");
+
     let enr_key = CombinedKey::generate_secp256k1();
     // Build a local ENR
     let enr = enr::EnrBuilder::new("v4")

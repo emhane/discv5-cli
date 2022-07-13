@@ -188,6 +188,16 @@ fn remove_topic<'a, 'b>() -> App<'a, 'b> {
                 .takes_value(true)
                 .help("A topic string"),
         )
+        .arg(
+            Arg::with_name("listen-port")
+                .value_name("PORT")
+                .long("listen-port")
+                .short("p")
+                .required(true)
+                .help("Specifies the listening UDP port of the server.")
+                .default_value("9002")
+                .takes_value(true),
+        )
 }
 
 fn reg_topic<'a, 'b>() -> App<'a, 'b> {
@@ -198,6 +208,16 @@ fn reg_topic<'a, 'b>() -> App<'a, 'b> {
                 .value_name("TOPIC")
                 .takes_value(true)
                 .help("A topic string"),
+        )
+        .arg(
+            Arg::with_name("listen-port")
+                .value_name("PORT")
+                .long("listen-port")
+                .short("p")
+                .required(true)
+                .help("Specifies the listening UDP port of the server.")
+                .default_value("9001")
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("enr")
@@ -218,6 +238,16 @@ fn topic_query<'a, 'b>() -> App<'a, 'b> {
                 .value_name("TOPICHASH")
                 .takes_value(true)
                 .help("A topic hash encoded in base64"),
+        )
+        .arg(
+            Arg::with_name("listen-port")
+                .value_name("PORT")
+                .long("listen-port")
+                .short("p")
+                .required(true)
+                .help("Specifies the listening UDP port of the server.")
+                .default_value("9002")
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("enr")
