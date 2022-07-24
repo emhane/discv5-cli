@@ -1,7 +1,11 @@
 use clap::ArgMatches;
-use discv5::{advertisement::topic::TopicHash, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder};
+use discv5::{
+    advertisement::topic::TopicHash, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, HASHES,
+};
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
+
+static mut TOPIC: String = String::new();
 
 pub async fn hashes(matches: &ArgMatches<'_>) {
     // Obtain the topic string
@@ -12,7 +16,7 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
     // Request the hashes
     info!("Fetching hashes of: {}", topic_string);
 
-    let hashes = Discv5::hashes(topic_string.to_owned());
+    let hashes = HASHES(topic_string);
     print_hashes(hashes);
 }
 
@@ -77,10 +81,11 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
 
 pub async fn topic_query(matches: &ArgMatches<'_>) {
     // Obtain the topic hash as base64 encoded string
-    let topic_hash = matches
+    let topic = matches
         .value_of("topic-hash")
         .expect("A <topic-hash> must be supplied");
-    let hash_bytes = base64::decode(topic_hash).unwrap();
+
+    let hash_bytes = base64::decode(topic).unwrap();
     let mut buf = [0u8; 32];
     buf.copy_from_slice(&hash_bytes);
     let topic_hash = TopicHash::from_raw(buf);
@@ -143,18 +148,24 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     }
     info!("Connected Peers: {}", discv5.connected_peers());
 
+    unsafe {
+        TOPIC = topic.to_owned();
+    }
+
     info!("Sending TOPICQUERYs");
     loop {
-        discv5
-            .topic_query_req(topic_hash)
-            .await
-            .map_err(|e| error!("Failed to register. Error: {}", e))
-            .map(|enrs| {
-                info!("Ads found for {}:", topic_hash);
-                enrs.into_iter()
-                    .for_each(|enr| info!("NodeId: {}", enr.node_id()));
-            })
-            .ok();
+        unsafe {
+            discv5
+                .topic_query_req(&TOPIC)
+                .await
+                .map_err(|e| error!("Failed to register. Error: {}", e))
+                .map(|enrs| {
+                    info!("Ads found for {}:", topic_hash);
+                    enrs.into_iter()
+                        .for_each(|enr| info!("NodeId: {}", enr.node_id()));
+                })
+                .ok();
+        }
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
     }
 }
@@ -163,8 +174,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     // Obtain the topic string
     let topic = matches
         .value_of("topic")
-        .expect("A <topic> must be supplied")
-        .to_owned();
+        .expect("A <topic> must be supplied");
 
     // Set up a server to receive the response
     let listen_address = "127.0.0.1"
@@ -224,13 +234,18 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
     }
     info!("Connected Peers: {}", discv5.connected_peers());
 
-    info!("Sending REGTOPIC requests");
-    discv5
-        .reg_topic_req(topic)
-        .await
-        .map_err(|e| error!("Failed to register. Error: {}", e))
-        .ok();
+    unsafe {
+        TOPIC = topic.to_owned();
+    }
 
+    info!("Sending REGTOPIC requests");
+    unsafe {
+        discv5
+            .register_topic(&TOPIC)
+            .await
+            .map_err(|e| error!("Failed to register. Error: {}", e))
+            .ok();
+    }
     tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
 
     loop {
@@ -238,7 +253,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
         info!("Requesting active topics");
 
         match discv5.active_topics().await {
-            Ok(ads) => info!("Ads published by us active on other nodes: {}", ads),
+            Ok(ads) => info!("Ads published by us active on other nodes: {:?}", ads),
             Err(e) => error!(
                 "Failed to obtain ads published on other nodes. Error: {}",
                 e
