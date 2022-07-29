@@ -1,6 +1,6 @@
 use clap::ArgMatches;
 use discv5::{
-    advertisement::topic::TopicHash, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, HASHES,
+    advertisement::topic::{Sha256Topic as Topic, TopicHash}, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, HASHES,
 };
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
@@ -147,10 +147,7 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
         TOPIC = topic.to_owned();
     }
 
-    let hash_bytes = base64::decode(topic).unwrap();
-    let mut buf = [0u8; 32];
-    buf.copy_from_slice(&hash_bytes);
-    let topic_hash = TopicHash::from_raw(buf);
+    let topic_hash = Topic::new(topic).hash();
 
     info!("Sending TOPICQUERYs");
     loop {
