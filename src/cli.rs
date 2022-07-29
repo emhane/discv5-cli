@@ -234,8 +234,8 @@ fn topic_query<'a, 'b>() -> App<'a, 'b> {
     App::new("topic-query")
         .about("Returns ENRs which advertise the topic hash")
         .arg(
-            Arg::with_name("topic-hash")
-                .value_name("TOPICHASH")
+            Arg::with_name("topic")
+                .value_name("TOPIC")
                 .takes_value(true)
                 .help("A topic hash encoded in base64"),
         )
