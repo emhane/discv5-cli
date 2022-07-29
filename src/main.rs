@@ -100,8 +100,8 @@ async fn main() {
         topic::hashes(topic_matches).await;
     } else if let Some(topic_matches) = cli_matches.subcommand_matches("reg-topic") {
         topic::reg_topic(topic_matches).await;
-    } else if let Some(topic_hash_matches) = cli_matches.subcommand_matches("topic-query") {
-        topic::topic_query(topic_hash_matches).await;
+    } else if let Some(topic_matches) = cli_matches.subcommand_matches("topic-query") {
+        topic::topic_query(topic_matches).await;
     } else if let Some(topic_matches) = cli_matches.subcommand_matches("remove-topic") {
         topic::remove_topic(topic_matches).await;
     } else {

@@ -42,7 +42,7 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     let topic_hash = TopicHash::from_raw(buf);
 
     // set up a server to receive the response
-    let listen_address = "0.0.0.0"
+    let listen_address = "127.0.0.1"
         .parse::<IpAddr>()
         .expect("This is a valid address");
 
@@ -80,15 +80,10 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
 }
 
 pub async fn topic_query(matches: &ArgMatches<'_>) {
-    // Obtain the topic hash as base64 encoded string
+    // Obtain the topic string
     let topic = matches
-        .value_of("topic-hash")
-        .expect("A <topic-hash> must be supplied");
-
-    let hash_bytes = base64::decode(topic).unwrap();
-    let mut buf = [0u8; 32];
-    buf.copy_from_slice(&hash_bytes);
-    let topic_hash = TopicHash::from_raw(buf);
+        .value_of("topic")
+        .expect("A <topic> must be supplied");
 
     // Set up a server to receive the response
     let listen_address = "127.0.0.1"
@@ -151,6 +146,11 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     unsafe {
         TOPIC = topic.to_owned();
     }
+
+    let hash_bytes = base64::decode(topic).unwrap();
+    let mut buf = [0u8; 32];
+    buf.copy_from_slice(&hash_bytes);
+    let topic_hash = TopicHash::from_raw(buf);
 
     info!("Sending TOPICQUERYs");
     loop {
