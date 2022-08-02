@@ -1,6 +1,8 @@
 use clap::ArgMatches;
 use discv5::{
-    advertisement::topic::{Sha256Topic as Topic, TopicHash}, enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, HASHES,
+    Topic,
+    HASH,
+    enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder,
 };
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
@@ -16,16 +18,8 @@ pub async fn hashes(matches: &ArgMatches<'_>) {
     // Request the hashes
     info!("Fetching hashes of: {}", topic_string);
 
-    let hashes = HASHES(topic_string);
-    print_hashes(hashes);
-}
-
-// Print each hash and the hashing algortihm it derives from
-fn print_hashes(hashes: Vec<(TopicHash, String)>) {
-    info!("Topic hashes:");
-    hashes
-        .into_iter()
-        .for_each(|(hash, hash_func)| info!("{} {}", hash, hash_func));
+    let hash = HASH(topic_string);
+    info!("Topic hash: {}", hash);
 }
 
 /// Remove topic from set of topics to republish, effective from next republish interval on
@@ -35,11 +29,6 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
         .value_of("topic")
         .expect("A <topic> must be supplied")
         .to_owned();
-
-    let hash_bytes = base64::decode(topic.clone()).unwrap();
-    let mut buf = [0u8; 32];
-    buf.copy_from_slice(&hash_bytes);
-    let topic_hash = TopicHash::from_raw(buf);
 
     // set up a server to receive the response
     let listen_address = "127.0.0.1"
@@ -70,12 +59,14 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     // start the server
     discv5.start(listen_socket).await.unwrap();
 
-    // Request the hashes
+    // Remove the given topic
     info!("Removing topic: {}", topic);
-
-    match discv5.remove_topic(topic_hash).await {
-        Ok(topic_string) => info!("Removed topic: {}", topic_string),
-        Err(e) => error!("Failed to remove topic. Error: {}", e),
+    unsafe {
+        TOPIC = topic.to_owned();
+        match discv5.remove_topic(&TOPIC).await {
+            Ok(topic_string) => info!("Removed topic: {}", topic_string),
+            Err(e) => error!("Failed to remove topic. Error: {}", e),
+        }
     }
 }
 
