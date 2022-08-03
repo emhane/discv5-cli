@@ -224,10 +224,9 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
 
     unsafe {
         TOPIC = topic.to_owned();
-    }
 
-    info!("Sending REGTOPIC requests");
-    unsafe {
+        info!("Registering topic {}", &TOPIC);
+
         discv5
             .register_topic(&TOPIC)
             .await
