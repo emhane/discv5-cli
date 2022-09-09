@@ -240,7 +240,20 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
         info!("Requesting active topics");
 
         match discv5.active_topics().await {
-            Ok(ads) => info!("Ads published by us active on other nodes: {:?}", ads),
+            Ok(ads) => {
+                info!("Ads published by us active on other nodes:");
+                for (ad, nodes) in ads {
+                    let mut nodes_display = "".to_owned();
+                    let mut nodes_iter = nodes.into_iter();
+                    if let Some(node) = nodes_iter.next() {
+                        nodes_display += &format!("{}", node);
+                    }
+                    while let Some(node) = nodes_iter.next() {
+                        nodes_display += &format!(", {}", node);
+                    }
+                    info!("Topic: {}, Advertised at: {}", ad.topic(), nodes_display);
+                }
+            }
             Err(e) => error!(
                 "Failed to obtain ads published on other nodes. Error: {}",
                 e
