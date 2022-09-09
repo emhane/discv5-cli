@@ -180,7 +180,7 @@ fn hashes<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn remove_topic<'a, 'b>() -> App<'a, 'b> {
-    App::new("remove_topic")
+    App::new("remove-topic")
         .about("Removes an ad from the set of ads to keep publishing")
         .arg(
             Arg::with_name("topic")

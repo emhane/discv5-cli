@@ -64,7 +64,7 @@ pub async fn remove_topic(matches: &ArgMatches<'_>) {
     unsafe {
         TOPIC = topic.to_owned();
         match discv5.remove_topic(&TOPIC).await {
-            Ok(topic_string) => info!("Removed topic: {}", topic_string),
+            Ok(_) => info!("Removed topic {}", topic),
             Err(e) => error!("Failed to remove topic. Error: {}", e),
         }
     }
@@ -144,7 +144,7 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
     loop {
         unsafe {
             discv5
-                .topic_query_req(&TOPIC)
+                .topic_query(&TOPIC)
                 .await
                 .map_err(|e| error!("Failed to register. Error: {}", e))
                 .map(|enrs| {
