@@ -134,8 +134,6 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
         TOPIC = topic.to_owned();
     }
 
-    let topic_hash = Topic::new(topic).hash();
-
     info!("Sending TOPICQUERYs");
     loop {
         unsafe {
@@ -143,10 +141,17 @@ pub async fn topic_query(matches: &ArgMatches<'_>) {
                 .topic_query(&TOPIC)
                 .await
                 .map_err(|e| error!("Failed to register. Error: {}", e))
-                .map(|enrs| {
-                    info!("Ads found for {}:", topic_hash);
-                    enrs.into_iter()
-                        .for_each(|enr| info!("NodeId: {}", enr.node_id()));
+                .map(|nodes| {
+                    let total_nodes = nodes.len();
+                    let mut nodes_display = "".to_owned();
+                    let mut nodes_iter = nodes.into_iter();
+                    if let Some(node) = nodes_iter.next() {
+                        nodes_display += &format!("{}", node);
+                    }
+                    while let Some(node) = nodes_iter.next() {
+                        nodes_display += &format!(", {}", node);
+                    }
+                    info!("Found {} ads for topic {}. Ads: {}", total_nodes, topic, nodes_display);
                 })
                 .ok();
         }
