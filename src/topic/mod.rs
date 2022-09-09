@@ -1,9 +1,5 @@
 use clap::ArgMatches;
-use discv5::{
-    Topic,
-    HASH,
-    enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder,
-};
+use discv5::{enr, enr::CombinedKey, Discv5, Discv5ConfigBuilder, Topic, HASH};
 use log::{error, info, warn};
 use std::net::{IpAddr, SocketAddr};
 
@@ -243,6 +239,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
             Ok(ads) => {
                 info!("Ads published by us active on other nodes:");
                 for (ad, nodes) in ads {
+                    let total_nodes = nodes.len();
                     let mut nodes_display = "".to_owned();
                     let mut nodes_iter = nodes.into_iter();
                     if let Some(node) = nodes_iter.next() {
@@ -251,7 +248,7 @@ pub async fn reg_topic(matches: &ArgMatches<'_>) {
                     while let Some(node) = nodes_iter.next() {
                         nodes_display += &format!(", {}", node);
                     }
-                    info!("Topic: {}, Advertised at: {}", ad.topic(), nodes_display);
+                    info!("Topic: {}, Advertised at {} nodes: {}", ad.topic(), total_nodes, nodes_display);
                 }
             }
             Err(e) => error!(
