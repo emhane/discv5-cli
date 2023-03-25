@@ -127,4 +127,12 @@ pub struct Server {
         help = "Bootstraps the server peers from a specified file."
     )]
     pub bootstrap: Option<String>,
+    /// The number of iterations to search for new peers. After the last iteration the node stays
+    /// online.
+    #[clap(
+        short = 'r',
+        long = "repetitions",
+        help = "The number of iterations to do find node query."
+    )]
+    pub search_repetitions: Option<u64>,
 }

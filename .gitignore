@@ -4,3 +4,6 @@ target
 
 # Exclude bootstrap json to prevent leakage
 bootstrap.json
+
+# VSCode
+.vscode

@@ -66,6 +66,8 @@ pub async fn run(server: &Server) {
         log::error!("Failed to bootstrap discv5 server with bootstrap file")
     }
 
+    let search_repetitions = server.search_repetitions;
+
     // Start the discv5 server
     let listen_address = server
         .listen_address
@@ -93,7 +95,12 @@ pub async fn run(server: &Server) {
     match server.service {
         ServerSubcommand::Query => {
             log::info!("Query service running...");
-            services::query::run(server_ref, Duration::from_secs(server.break_time)).await;
+            services::query::run(
+                server_ref,
+                Duration::from_secs(server.break_time),
+                search_repetitions,
+            )
+            .await;
         }
         ServerSubcommand::Events => {
             log::info!("Events service running...");
