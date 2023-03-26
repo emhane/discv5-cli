@@ -5,14 +5,16 @@ use std::{sync::Arc, time::Duration};
 pub async fn run(discv5: Arc<Discv5>, break_time: Duration, search_repetitions: Option<u64>) {
     let mut repetitions = 0;
     loop {
-        log::info!("Searching for peers...");
         let run_query = match search_repetitions {
-            None => true,
+            None => {
+                log::info!("Searching for peers...");
+                true
+            },
             Some(search_repetitions) => {
                 if repetitions < search_repetitions {
                     repetitions += 1;
                     log::info!(
-                        "...search repetition {}/{}",
+                        "Searching for peers...search repetition {}/{}...",
                         repetitions,
                         search_repetitions
                     );
