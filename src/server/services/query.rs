@@ -3,15 +3,19 @@ use std::{sync::Arc, time::Duration};
 
 /// Regularly queries for new peers.
 pub async fn run(discv5: Arc<Discv5>, break_time: Duration, search_repetitions: Option<u64>) {
-    let mut iterations = 0;
+    let mut repetitions = 0;
     loop {
         log::info!("Searching for peers...");
         let run_query = match search_repetitions {
             None => true,
             Some(search_repetitions) => {
-                if iterations < search_repetitions {
-                    iterations += 1;
-                    log::info!("...iteration {}/{}", iterations, search_repetitions);
+                if repetitions < search_repetitions {
+                    repetitions += 1;
+                    log::info!(
+                        "...search repetition {}/{}",
+                        repetitions,
+                        search_repetitions
+                    );
                     true
                 } else {
                     false

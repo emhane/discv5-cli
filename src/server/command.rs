@@ -131,7 +131,7 @@ pub struct Server {
     /// online.
     #[clap(
         short = 'r',
-        long = "repetitions",
+        long = "search-repetitions",
         help = "The number of iterations to do find node query."
     )]
     pub search_repetitions: Option<u64>,
