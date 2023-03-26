@@ -222,16 +222,23 @@ $ discv5-cli -- packet decode --packet 9fd3c9ced567380bd7f0b25b4e8cb250401f9654b
 2022-12-07T20:08:20.265Z INFO  [discv5_cli::packet] Using decoding node id: 0xd94f..69d9
 2022-12-07T20:08:20.265Z INFO  [discv5_cli::packet] Packet decoded: (Packet { iv: 212446919118329375467898179749707297360, header: PacketHeader { message_nonce: [86, 230, 107, 84, 45, 19, 246, 151, 176, 105, 149, 81], kind: Message { src_id: NodeId { raw: [238, 233, 154, 181, 126, 7, 103, 153, 11, 0, 123, 98, 184, 185, 96, 132, 106, 88, 170, 186, 22, 234, 9, 223, 97, 84, 167, 121, 21, 83, 116, 203] } } }, message: [212, 14, 75, 142, 238, 92, 68, 232, 174, 86, 255, 143, 139, 218, 121, 253, 141, 62, 137, 158, 54, 253, 192, 123, 36, 215, 78, 220, 138, 177, 137, 119, 95, 154, 237, 216, 145, 143, 208, 63, 127, 82, 217, 139] }, [159, 211, 201, 206, 213, 103, 56, 11, 215, 240, 178, 91, 78, 140, 178, 80, 100, 105, 115, 99, 118, 53, 0, 1, 0, 86, 230, 107, 84, 45, 19, 246, 151, 176, 105, 149, 81, 0, 32, 238, 233, 154, 181, 126, 7, 103, 153, 11, 0, 123, 98, 184, 185, 96, 132, 106, 88, 170, 186, 22, 234, 9, 223, 97, 84, 167, 121, 21, 83, 116, 203])
 ```
-**NAT hole punching (at least 3 nodes, i.e. one node listening on a NAT:ed port and 2 nodes listening on not NAT:ed ports)**
-**Node 1 (not NAT:ed) - the bootstrap node. For the -l flag use the WAN reachable address.**
+**NAT hole punching (at least 3 nodes, i.e. one node listening on a NAT:ed port and 2 nodes listening on not NAT:ed ports). ONLY ASYMMETRIC NATs.**
+
+**Node 1 (not NAT:ed) - the bootstrap node**
+
+For the `-l` flag use the WAN reachable address.
 ```bash
 $ discv5-cli server -l <listen-address> -p <listen-port> -w query
 ```
-**Node 2 (NAT:ed). For the -u flag and -p flag use the same port, if this doesn't work, this node is most probably behind a symmetric NAT and hole punching will not work as each connection will be assigned a new port upon instantiation. For the -i flag use the WAN reachable address. The -r flag's value set to 3 should give Node 1 and Node 2 more than enough time to connect. For the -e flag use the ENR output by Node 1.**
+**Node 2 (NAT:ed)**
+
+For the `-u` flag and `-p` flag use the same port, if this doesn't work, this node is most probably behind a symmetric NAT and hole punching will not work as each connection will be assigned a new port upon instantiation. For the `-i` flag use the WAN reachable address. The `-r` flag's value set to 3 should give Node 1 and Node 2 more than enough time to connect. For the `-e` flag use the ENR output by Node 1.
 ```bash
 $ discv5-cli server -p <listen-port> -u <listen-port> -i <public-listen-address> -r 3 -e $ENR query
 ```
-**Node 3 (not NAT:ed). Wait to start this node until Node 2 has completed its 'search-repetitions' (read the output), then Node 1 is passive in the sense that it does not actively look for new peers and relies on incoming hole punching attempts to connect to new peers. For the -e flag use the ENR output by Node 1.**
+**Node 3 (not NAT:ed)**
+
+Wait to start this node until Node 2 has completed its `search-repetitions` (read the output), then Node 1 is passive in the sense that it does not actively look for new peers and relies on incoming hole punching attempts to connect to new peers. For the `-e` flag use the ENR output by Node 1.
 ```bash
 $ discv5-cli server -l <listen-address> -p <listen-port> -w -e $ENR query
 ```
